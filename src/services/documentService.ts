@@ -1,0 +1,1 @@
+saveDocument(projectId, type, content)
