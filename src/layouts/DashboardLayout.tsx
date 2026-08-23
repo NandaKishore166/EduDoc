@@ -8,6 +8,13 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
+  const navClass = ({ isActive }: { isActive: boolean }) =>
+    `block rounded-lg p-3 transition ${
+      isActive
+        ? "bg-blue-600 text-white"
+        : "hover:bg-slate-700 text-slate-200"
+    }`;
+
   return (
     <div className="flex min-h-screen bg-slate-100">
       {/* Sidebar */}
@@ -17,28 +24,25 @@ export default function DashboardLayout({
         </h1>
 
         <nav className="space-y-3">
-          <button className="w-full text-left hover:bg-slate-700 rounded-lg p-3">
+          <NavLink to="/dashboard" className={navClass}>
             Dashboard
-          </button>
+          </NavLink>
 
-          <NavLink
-  to="/ai"
-  className="block rounded-lg p-3 hover:bg-slate-700"
->
-  AI Assistant
-</NavLink>
+          <NavLink to="/projects" className={navClass}>
+            Projects
+          </NavLink>
 
-          <button className="w-full text-left hover:bg-slate-700 rounded-lg p-3">
+          <NavLink to="/documents" className={navClass}>
             Documents
-          </button>
+          </NavLink>
 
-          <button className="w-full text-left hover:bg-slate-700 rounded-lg p-3">
+          <NavLink to="/ai-assistant" className={navClass}>
             AI Assistant
-          </button>
+          </NavLink>
 
-          <button className="w-full text-left hover:bg-slate-700 rounded-lg p-3">
+          <NavLink to="/settings" className={navClass}>
             Settings
-          </button>
+          </NavLink>
         </nav>
       </aside>
 

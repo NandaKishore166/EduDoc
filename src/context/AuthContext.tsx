@@ -19,7 +19,7 @@ interface AuthContextType {
   loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType>({
+export const AuthContext = createContext<AuthContextType>({
   firebaseUser: null,
   appUser: null,
   loading: true,
@@ -35,22 +35,33 @@ export const AuthProvider = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setFirebaseUser(user);
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (user) => {
+        try {
+          setFirebaseUser(user);
 
-      if (user) {
-        const docRef = doc(db, "users", user.uid);
-        const snap = await getDoc(docRef);
+          if (!user) {
+            setAppUser(null);
+            return;
+          }
 
-        if (snap.exists()) {
-          setAppUser(snap.data() as AppUser);
+          const docRef = doc(db, "users", user.uid);
+          const snap = await getDoc(docRef);
+
+          if (snap.exists()) {
+            setAppUser(snap.data() as AppUser);
+          } else {
+            setAppUser(null);
+          }
+        } catch (error) {
+          console.error("Auth initialization error:", error);
+          setAppUser(null);
+        } finally {
+          setLoading(false);
         }
-      } else {
-        setAppUser(null);
       }
-
-      setLoading(false);
-    });
+    );
 
     return unsubscribe;
   }, []);

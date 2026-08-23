@@ -1,26 +1,47 @@
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string;
+import {
+  getAI,
+  getGenerativeModel,
+  GoogleAIBackend,
+} from "firebase/ai";
+
+import { app } from "../firebase/config";
+
+const ai = getAI(app, {
+  backend: new GoogleAIBackend(),
+});
+
+const model = getGenerativeModel(ai, {
+  model: "gemini-3.6-flash",
+});
 
 export async function generateAI(prompt: string) {
-  const response = await fetch(
-    "https://gemini.googleapis.com/v1/models/gemini-2.5-flash:generateText",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt: {
-          text: prompt,
-        },
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`AI request failed: ${response.status} ${response.statusText}`);
+  if (!prompt.trim()) {
+    throw new Error("Prompt cannot be empty.");
   }
 
-  const data = await response.json();
-  return data?.candidates?.[0]?.content ?? "";
+  try {
+    console.log("Sending prompt to Firebase AI Logic...");
+
+    const result = await model.generateContent(prompt);
+
+    const text = result.response.text();
+
+    console.log("AI response received.");
+
+    if (!text) {
+      throw new Error("AI returned an empty response.");
+    }
+
+    return text;
+  } catch (error) {
+    console.error("========== FIREBASE AI ERROR ==========");
+    console.error(error);
+    console.error("=======================================");
+
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+
+    throw new Error("Unknown Firebase AI error.");
+  }
 }

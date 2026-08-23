@@ -3,6 +3,11 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
+import {
+  initializeAppCheck,
+  ReCaptchaV3Provider,
+} from "firebase/app-check";
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "edudoc-ai-89de3.firebaseapp.com",
@@ -12,7 +17,22 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
+
+// App Check debug mode for localhost
+if (import.meta.env.DEV) {
+  (
+    self as typeof self & {
+      FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string;
+    }
+  ).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+}
+
+// App Check
+initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider("none"),
+  isTokenAutoRefreshEnabled: true,
+});
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);

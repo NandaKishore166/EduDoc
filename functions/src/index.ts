@@ -1,37 +1,55 @@
-import { onRequest } from "firebase-functions/v2/https";
+import { setGlobalOptions } from "firebase-functions";
+import { onCall, HttpsError } from "firebase-functions/https";
+import { defineSecret } from "firebase-functions/params";
 import { GoogleGenAI } from "@google/genai";
-import * as dotenv from "dotenv";
 
-dotenv.config();
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY!,
+setGlobalOptions({
+  maxInstances: 10,
 });
 
-export const generateDocument = onRequest(async (req, res) => {
-  try {
-    const { prompt } = req.body;
+const geminiApiKey = defineSecret("GEMINI_API_KEY");
 
-    if (!prompt) {
-      res.status(400).json({
-        error: "Prompt is required.",
-      });
-      return;
+export const generateAI = onCall(
+  {
+    secrets: [geminiApiKey],
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "You must be logged in to use the AI assistant."
+      );
     }
 
-    const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-    });
+    const prompt = request.data?.prompt;
 
-    res.json({
-      text: result.text,
-    });
-  } catch (error) {
-    console.error(error);
+    if (typeof prompt !== "string" || !prompt.trim()) {
+      throw new HttpsError(
+        "invalid-argument",
+        "A valid prompt is required."
+      );
+    }
 
-    res.status(500).json({
-      error: "Failed to generate content.",
-    });
+    try {
+      const ai = new GoogleGenAI({
+        apiKey: geminiApiKey.value(),
+      });
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+
+      return {
+        text: response.text ?? "",
+      };
+    } catch (error) {
+      console.error("Gemini generation failed:", error);
+
+      throw new HttpsError(
+        "internal",
+        "Failed to generate AI content."
+      );
+    }
   }
-});
+);
