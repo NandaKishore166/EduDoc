@@ -8,6 +8,11 @@ import { useAuth } from "../context/AuthContext";
 import { getProject } from "../services/projectService";
 import type { ProjectData } from "../services/projectService";
 
+import { downloadPDF } from "../utils/pdfExport";
+
+
+import { downloadDOCX } from "../utils/docxExport";
+
 import {
   saveDocument,
   getProjectDocuments,
@@ -456,6 +461,35 @@ Generate only the ${selectedType}.
             </button>
           </div>
         </div>
+
+<button
+  type="button"
+  onClick={() =>
+    downloadPDF(selectedType, content)
+  }
+  disabled={!content.trim()}
+  className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white px-5 py-3 rounded-lg transition"
+>
+  📄 Download PDF
+</button>
+
+
+<button
+  type="button"
+  onClick={() =>
+    downloadDOCX(selectedType, content)
+  }
+  disabled={!content.trim()}
+  className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-5 py-3 rounded-lg transition"
+>
+  📝 Download DOCX
+</button>
+
+
+
+
+
+
 
         {/* Document editor */}
         <textarea

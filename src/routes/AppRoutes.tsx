@@ -9,6 +9,8 @@ import Projects from "../pages/Projects";
 import NewProject from "../pages/NewProject";
 import ProjectWorkspace from "../pages/ProjectWorkspace";
 
+import AIAssistant from "../pages/AIAssistant";
+
 import ProtectedRoute from "./ProtectedRoute";
 
 export default function AppRoutes() {
@@ -67,6 +69,18 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+{/* AI Assistant */}
+<Route
+  path="/ai-assistant"
+  element={
+    <ProtectedRoute>
+      <AIAssistant />
+    </ProtectedRoute>
+  }
+/>
+
+
 
       {/* Unknown routes */}
       <Route
