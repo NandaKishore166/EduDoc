@@ -1,10 +1,13 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   getDocs,
   query,
-  where,
   serverTimestamp,
+  updateDoc,
+  where,
 } from "firebase/firestore";
 
 import { db } from "../firebase/config";
@@ -16,8 +19,10 @@ export interface DocumentData {
   type: string;
   content: string;
   createdAt?: any;
+  updatedAt?: any;
 }
 
+// Create document
 export const saveDocument = async (
   projectId: string,
   ownerId: string,
@@ -30,9 +35,11 @@ export const saveDocument = async (
     type,
     content,
     createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   });
 };
 
+// Get documents belonging to a project
 export const getProjectDocuments = async (
   projectId: string,
   ownerId: string
@@ -45,8 +52,37 @@ export const getProjectDocuments = async (
 
   const snapshot = await getDocs(q);
 
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...(doc.data() as DocumentData),
+  return snapshot.docs.map((document) => ({
+    id: document.id,
+    ...(document.data() as DocumentData),
   }));
+};
+
+export const updateDocument = async (
+  documentId: string,
+  content: string
+) => {
+  const documentRef = doc(
+    db,
+    "documents",
+    documentId
+  );
+
+  await updateDoc(documentRef, {
+    content,
+    updatedAt: serverTimestamp(),
+  });
+};
+
+// Delete document
+export const deleteDocument = async (
+  documentId: string
+) => {
+  const documentRef = doc(
+    db,
+    "documents",
+    documentId
+  );
+
+  await deleteDoc(documentRef);
 };
